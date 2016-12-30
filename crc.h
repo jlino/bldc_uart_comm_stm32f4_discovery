@@ -25,6 +25,7 @@
 #ifndef CRC_H_
 #define CRC_H_
 
+#include <avr/pgmspace.h>
 /*
  * Functions
  */
