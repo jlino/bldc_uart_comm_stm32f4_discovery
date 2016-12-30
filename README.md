@@ -7,7 +7,9 @@ Connect the grounds between the arduino board and the VESC.
 To upload the project to an arduino board, just use the Arduino IDE and include the following lines at the top of your sketch to use it:  
 
 `#include <datatypes.h>`
+
 `#include <comm_uart_arduino.h>`
+
 `#include <bldc_interface.h>`
 
 Further documentation and example sketches will be included if there is interest from the community.  
