@@ -20,12 +20,14 @@
 
 #include <datatypes.h>
 
+//#define DEBUG_BLDC
+
 // interface functions
-void bldc_interface_init(void(*func)(unsigned char *data, unsigned int len));
+void bldc_interface_init(void(*func)(unsigned char *data, int len));
 void bldc_interface_set_forward_can(int32_t vesc_id);
-void bldc_interface_set_forward_func(void(*func)(unsigned char *data, unsigned int len));
-void bldc_interface_send_packet(unsigned char *data, unsigned int len);
-void bldc_interface_process_packet(unsigned char *data, unsigned int len);
+void bldc_interface_set_forward_func(void(*func)(unsigned char *data, int len));
+void bldc_interface_send_packet(unsigned char *data, int len);
+void bldc_interface_process_packet(unsigned char *data, int len);
 
 // Function pointer setters
 void bldc_interface_set_rx_value_func(void(*func)(mc_values *values));

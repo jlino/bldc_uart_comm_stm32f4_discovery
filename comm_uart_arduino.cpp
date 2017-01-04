@@ -25,34 +25,19 @@
 #include <comm_uart_arduino.h>
 #include <bldc_interface_uart.h>
 
+
 // Settings
-#define __CUA_UART_BAUDRATE			115200
-//#define SERIAL_RX_BUFFER_SIZE	1024/4
+#define __CUA_UART_BAUDRATE			9600
 
 // Private functions
-static void send_packet(unsigned char *data, unsigned int len);
+static void send_packet(unsigned char *data, int len);
 
 // Interrupts (Makeshift "Threads")
 static bool is_data_ready = false;
 
-// Variables
-static uint8_t serial_rx_buffer[SERIAL_RX_BUFFER_SIZE];
-static int serial_rx_read_pos = 0;
-static int serial_rx_write_pos = 0;
-//static bool is_data_ready = false;
-
-ISR(TIMER1_COMPA_vect){//timer1 interrupt 1Hz 
-	// Wait for data to become available and process it as long as there is data.
-	if(is_data_ready) {
-		while (serial_rx_read_pos != serial_rx_write_pos) {
-			bldc_interface_uart_process_byte(serial_rx_buffer[serial_rx_read_pos++]);
-
-			if (serial_rx_read_pos == SERIAL_RX_BUFFER_SIZE) {
-				serial_rx_read_pos = 0;
-			}
-		}
-	}
-}
+#ifdef __CUA_USE_SECOND_SERIAL
+	SoftwareSerial mySerial(8, 7); // RX, TX
+#endif
 
 /**
  * This thread is only for calling the timer function once
@@ -69,17 +54,44 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 1Hz
  time loop() runs, so using delay inside loop can delay
  response.  Multiple bytes of data may be available.
  */
-void serialEvent() {
-	while (Serial.available()) {
+void softwareSerialEvent() {
+	bool isWork = false;
+	#ifdef DEBUG_BLDC
+		int len = 0;
+		uint8_t rbyte;
+	#endif
 
-		serial_rx_buffer[serial_rx_write_pos++] = Serial.read();
-		
-		if (serial_rx_write_pos == SERIAL_RX_BUFFER_SIZE) {
-			serial_rx_write_pos = 0;
-		}
+	if(mySerial.available()) {
+		isWork = true;
+
+		#ifdef DEBUG_BLDC
+			Serial.print(F("[ bldc ] softwareSerialEvent = read["));
+		#endif
 	}
 
-	is_data_ready = true;
+	while (mySerial.available()) {
+		
+
+		#ifndef DEBUG_BLDC
+			bldc_interface_uart_process_byte(mySerial.read());
+		#else
+			rbyte = mySerial.read();
+			bldc_interface_uart_process_byte(rbyte);
+			Serial.write(rbyte);
+			len += sizeof(uint8_t);
+		#endif
+	}
+
+	if(isWork) {
+		#ifdef DEBUG_BLDC
+			Serial.print(F("] len["));
+			Serial.print(len);
+			Serial.println(F("]"));
+			
+		#endif
+
+		is_data_ready = true;
+	}
 }
 
 /**
@@ -90,29 +102,26 @@ void serialEvent() {
  * @param len
  * Data array length
  */
-static void send_packet(unsigned char *data, unsigned int len) {
-	if (len > (PACKET_MAX_PL_LEN + 5)) {
+static void send_packet(unsigned char *data, int len) {
+	/*if (len > (PACKET_MAX_PL_LEN + 5)) {
 		return;
-	}
-
-	/* Wait for the previous transmission to finish.
-	while (UART_DEV.txstate == UART_TX_ACTIVE) {
-		chThdSleep(1);
 	}*/
 
-	// Copy this data to a new buffer in case the provided one is re-used
-	// after this function returns.
-	static uint8_t buffer[PACKET_MAX_PL_LEN + 5];
-	memcpy(buffer, data, len);
-
 	// Send the data over UART
-	Serial.write(buffer, len);
-	//uartStartSend(&UART_DEV, len, buffer);
+	#ifdef DEBUG_BLDC
+		Serial.print(F("[ bldc ] send_packet = write["));
+		Serial.write(data, len);
+		Serial.print(F("] len["));
+		Serial.print(len);
+		Serial.println(F("]"));
+	#endif
+
+	mySerial.write(data, len);
 }
 
  void comm_uart_arduino_init() {
 	// Initialize UART
-	Serial.begin(__CUA_UART_BAUDRATE);
+	mySerial.begin(__CUA_UART_BAUDRATE);
 	/*while (!Serial) {
 	    ; // wait for serial port to connect. Needed for native USB port only
 	}*/
@@ -136,7 +145,7 @@ static void send_packet(unsigned char *data, unsigned int len) {
 	// enable timer compare interrupt
 	TIMSK0 |= (1 << OCIE0A);*/
 
-	//set timer1 interrupt at 1Hz
+	/*set timer1 interrupt at 1Hz
 	TCCR1A = 0;// set entire TCCR1A register to 0
 	TCCR1B = 0;// same for TCCR1B
 	TCNT1  = 0;//initialize counter value to 0
@@ -147,7 +156,7 @@ static void send_packet(unsigned char *data, unsigned int len) {
 	// Set CS101 and CS12 bits for 1024 prescaler
 	TCCR1B |= (1 << CS12) | (1 << CS10);  
 	// enable timer compare interrupt
-	TIMSK1 |= (1 << OCIE1A);
+	TIMSK1 |= (1 << OCIE1A);*/
 
 	//set timer2 interrupt at 1kHz
 	TCCR2A = 0;// set entire TCCR2A register to 0
@@ -161,9 +170,6 @@ static void send_packet(unsigned char *data, unsigned int len) {
 	TCCR2B |= (1 << CS22);   
 	// enable timer compare interrupt
 	TIMSK2 |= (1 << OCIE2A);
-
-	// Inotialize the processing interrupt
-	is_data_ready = false;
 
 	// Allow interrupts so that the Processing and Timer interrupts ("Threads") start
 	interrupts();

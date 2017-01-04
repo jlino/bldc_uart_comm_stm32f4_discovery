@@ -29,8 +29,8 @@
 #define PACKET_HANDLER			0
 
 // Private functions
-static void process_packet(unsigned char *data, unsigned int len);
-static void send_packet_bldc_interface(unsigned char *data, unsigned int len);
+static void process_packet(unsigned char *data, int len);
+static void send_packet_bldc_interface(unsigned char *data, int len);
 
 /**
  * Initialize the UART BLDC interface and provide a function to be used for
@@ -39,7 +39,7 @@ static void send_packet_bldc_interface(unsigned char *data, unsigned int len);
  * @param func
  * Function provided for sending packets.
  */
-void bldc_interface_uart_init(void(*func)(unsigned char *data, unsigned int len)) {
+void bldc_interface_uart_init(void(*func)(unsigned char *data, int len)) {
 	// Initialize packet handler
 	packet_init(func, process_packet, PACKET_HANDLER);
 
@@ -75,7 +75,7 @@ void bldc_interface_uart_run_timer(void) {
  * @param len
  * Data array length
  */
-static void process_packet(unsigned char *data, unsigned int len) {
+static void process_packet(unsigned char *data, int len) {
 	// Let bldc_interface process the packet.
 	bldc_interface_process_packet(data, len);
 }
@@ -88,7 +88,7 @@ static void process_packet(unsigned char *data, unsigned int len) {
  * @param len
  * Data array length
  */
-static void send_packet_bldc_interface(unsigned char *data, unsigned int len) {
+static void send_packet_bldc_interface(unsigned char *data, int len) {
 	// Pass the packet to the packet handler to add checksum, length, start and stop bytes.
 	packet_send_packet(data, len, PACKET_HANDLER);
 }

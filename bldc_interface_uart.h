@@ -29,7 +29,7 @@
 #include <packet.h> // For the MAX_PACKET_LEN define
 
 // Functions
-void bldc_interface_uart_init(void(*func)(unsigned char *data, unsigned int len));
+void bldc_interface_uart_init(void(*func)(unsigned char *data, int len));
 void bldc_interface_uart_process_byte(unsigned char b);
 void bldc_interface_uart_run_timer();
 

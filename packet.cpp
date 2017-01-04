@@ -29,8 +29,8 @@
 typedef struct {
 	volatile unsigned char rx_state;
 	volatile unsigned char rx_timeout;
-	void(*send_func)(unsigned char *data, unsigned int len);
-	void(*process_func)(unsigned char *data, unsigned int len);
+	void(*send_func)(unsigned char *data, int len);
+	void(*process_func)(unsigned char *data, int len);
 	unsigned int payload_length;
 	unsigned char rx_buffer[PACKET_MAX_PL_LEN];
 	unsigned char tx_buffer[PACKET_MAX_PL_LEN + 6];
@@ -41,13 +41,13 @@ typedef struct {
 
 static PACKET_STATE_t handler_states[PACKET_HANDLERS];
 
-void packet_init(void (*s_func)(unsigned char *data, unsigned int len),
-		void (*p_func)(unsigned char *data, unsigned int len), int handler_num) {
+void packet_init(void (*s_func)(unsigned char *data, int len),
+		void (*p_func)(unsigned char *data, int len), int handler_num) {
 	handler_states[handler_num].send_func = s_func;
 	handler_states[handler_num].process_func = p_func;
 }
 
-void packet_send_packet(unsigned char *data, unsigned int len, int handler_num) {
+void packet_send_packet(unsigned char *data, int len, int handler_num) {
 	if (len > PACKET_MAX_PL_LEN) {
 		return;
 	}
@@ -149,9 +149,19 @@ void packet_process_byte(uint8_t rx_data, int handler_num) {
 
 	case 6:
 		if (rx_data == 3) {
+			#ifdef DEBUG_BLDC_P
+				Serial.print(F("[ bldc ] packet_process_byte = rx_data["));
+				Serial.print(rx_data);
+				Serial.print("] rx_state[");
+				Serial.print(handler_states[handler_num].rx_state);
+				Serial.print("] payload_length[");
+				Serial.print(handler_states[handler_num].payload_length);
+				Serial.println("]");
+			#endif
 			if (crc16(handler_states[handler_num].rx_buffer, handler_states[handler_num].payload_length)
 					== ((unsigned short)handler_states[handler_num].crc_high << 8
-							| (unsigned short)handler_states[handler_num].crc_low)) {
+						| (unsigned short)handler_states[handler_num].crc_low)) {
+				//Serial.println("Packet received!");
 				// Packet received!
 				if (handler_states[handler_num].process_func) {
 					handler_states[handler_num].process_func(handler_states[handler_num].rx_buffer,
