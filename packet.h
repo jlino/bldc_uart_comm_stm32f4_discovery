@@ -31,7 +31,7 @@
 //#define DEBUG_BLDC_P
 
 // Settings
-#define PACKET_RX_TIMEOUT		2
+#define PACKET_RX_TIMEOUT		100
 #define PACKET_HANDLERS			1
 #define PACKET_MAX_PL_LEN		128 //256
 

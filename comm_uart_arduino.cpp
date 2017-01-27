@@ -27,7 +27,7 @@
 
 
 // Settings
-#define __CUA_UART_BAUDRATE			9600
+#define __CUA_UART_BAUDRATE			9600 //115200
 
 // Private functions
 static void send_packet(unsigned char *data, int len);
@@ -58,40 +58,49 @@ void softwareSerialEvent() {
 	bool isWork = false;
 	#ifdef DEBUG_BLDC
 		int len = 0;
-		uint8_t rbyte;
+		//uint8_t rbyte;
 	#endif
 
 	if(mySerial.available()) {
-		isWork = true;
+		//isWork = true;
 
 		#ifdef DEBUG_BLDC
-			Serial.print(F("[ bldc ] softwareSerialEvent = read["));
+			Serial.println(F("[ bldc ] softwareSerialEvent: Reading from serial..."));
 		#endif
-	}
 
-	while (mySerial.available()) {
+		while (mySerial.available()) {
 		
+			//#ifndef DEBUG_BLDC
+				bldc_interface_uart_process_byte(mySerial.read());
+				#ifdef DEBUG_BLDC
+					len += sizeof(uint8_t);
+				#endif
+			/*#else
+				rbyte = mySerial.read();
+				bldc_interface_uart_process_byte(rbyte);
+				Serial.write(rbyte);
+				len += sizeof(uint8_t);
+			#endif*/
+					//delay(2);
+		}
 
-		#ifndef DEBUG_BLDC
-			bldc_interface_uart_process_byte(mySerial.read());
-		#else
-			rbyte = mySerial.read();
-			bldc_interface_uart_process_byte(rbyte);
-			Serial.write(rbyte);
-			len += sizeof(uint8_t);
-		#endif
-	}
-
-	if(isWork) {
+		
 		#ifdef DEBUG_BLDC
-			Serial.print(F("] len["));
+			Serial.print(F("[ bldc ] softwareSerialEvent: Just read "));
 			Serial.print(len);
-			Serial.println(F("]"));
-			
+			Serial.println(F(" bytes."));
 		#endif
 
 		is_data_ready = true;
+		
 	}
+	else {
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] softwareSerialEvent: nothing to do... "));
+		#endif
+	}
+
+	
 }
 
 /**
@@ -102,20 +111,24 @@ void softwareSerialEvent() {
  * @param len
  * Data array length
  */
-static void send_packet(unsigned char *data, int len) {
+void send_packet(unsigned char *data, int len) {
 	/*if (len > (PACKET_MAX_PL_LEN + 5)) {
 		return;
 	}*/
-
+	//data[0] = 4;
 	// Send the data over UART
 	#ifdef DEBUG_BLDC
-		Serial.print(F("[ bldc ] send_packet = write["));
-		Serial.write(data, len);
-		Serial.print(F("] len["));
+		Serial.print(F("[ bldc ] send_packet = len["));
 		Serial.print(len);
+		Serial.print(F("] write["));
+		for (int i = 0; i < len ; i++){
+			Serial.print(data[i]);
+		Serial.print(F(":"));
+		}
+		//Serial.write(data, len);
 		Serial.println(F("]"));
 	#endif
-
+	
 	mySerial.write(data, len);
 }
 

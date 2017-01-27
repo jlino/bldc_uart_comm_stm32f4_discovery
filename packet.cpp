@@ -86,20 +86,38 @@ void packet_timerfunc(void) {
 			handler_states[i].rx_timeout--;
 		} else {
 			handler_states[i].rx_state = 0;
+			/*#ifdef DEBUG_BLDC_P
+				Serial.println(F("[ bldc ] packet_timerfunc: Timeout!"));
+			#endif*/
 		}
 	}
 }
 
 void packet_process_byte(uint8_t rx_data, int handler_num) {
+
+	#ifdef DEBUG_BLDC_P
+		Serial.print(F("[ bldc ] packet_process_byte = rx_data[ "));
+		Serial.print(rx_data);
+		Serial.print(F(" ] handler_states.rx_data[ "));
+		Serial.print(handler_states[handler_num].rx_state);
+		Serial.println(F(" ]"));
+	#endif
+
 	switch (handler_states[handler_num].rx_state) {
 	case 0:
 		if (rx_data == 2) {
+			#ifdef DEBUG_BLDC_P
+				Serial.println(F("[ bldc ] packet_process_byte: 1 byte PL len"));
+			#endif
 			// 1 byte PL len
 			handler_states[handler_num].rx_state += 2;
 			handler_states[handler_num].rx_timeout = PACKET_RX_TIMEOUT;
 			handler_states[handler_num].rx_data_ptr = 0;
 			handler_states[handler_num].payload_length = 0;
 		} else if (rx_data == 3) {
+			#ifdef DEBUG_BLDC_P
+				Serial.println(F("[ bldc ] packet_process_byte: 2 byte PL len"));
+			#endif
 			// 2 byte PL len
 			handler_states[handler_num].rx_state++;
 			handler_states[handler_num].rx_timeout = PACKET_RX_TIMEOUT;
@@ -112,12 +130,25 @@ void packet_process_byte(uint8_t rx_data, int handler_num) {
 
 	case 1:
 		handler_states[handler_num].payload_length = (unsigned int)rx_data << 8;
+
+		#ifdef DEBUG_BLDC_P
+			Serial.print(F("[ bldc ] packet_process_byte = payload_length[ "));
+			Serial.print( handler_states[handler_num].payload_length );
+			Serial.println(F(" ]"));
+		#endif
+
 		handler_states[handler_num].rx_state++;
 		handler_states[handler_num].rx_timeout = PACKET_RX_TIMEOUT;
 		break;
 
 	case 2:
 		handler_states[handler_num].payload_length |= (unsigned int)rx_data;
+
+		#ifdef DEBUG_BLDC_P
+			Serial.print(F("[ bldc ] packet_process_byte = payload_length[ "));
+			Serial.print( handler_states[handler_num].payload_length );
+			Serial.println(F(" ]"));
+		#endif
 		if (handler_states[handler_num].payload_length > 0 &&
 				handler_states[handler_num].payload_length <= PACKET_MAX_PL_LEN) {
 			handler_states[handler_num].rx_state++;
@@ -132,18 +163,31 @@ void packet_process_byte(uint8_t rx_data, int handler_num) {
 		if (handler_states[handler_num].rx_data_ptr == handler_states[handler_num].payload_length) {
 			handler_states[handler_num].rx_state++;
 		}
+		#ifdef DEBUG_BLDC_P
+			Serial.print(F("[ bldc ] packet_process_byte = Received "));
+			Serial.print( handler_states[handler_num].rx_data_ptr );
+			Serial.print(F(" bytes of "));
+			Serial.print( handler_states[handler_num].payload_length );
+			Serial.println(F("."));
+		#endif
 		handler_states[handler_num].rx_timeout = PACKET_RX_TIMEOUT;
 		break;
 
 	case 4:
 		handler_states[handler_num].crc_high = rx_data;
 		handler_states[handler_num].rx_state++;
+		#ifdef DEBUG_BLDC_P
+			Serial.println(F("[ bldc ] packet_process_byte = Received crc_high byte."));
+		#endif
 		handler_states[handler_num].rx_timeout = PACKET_RX_TIMEOUT;
 		break;
 
 	case 5:
 		handler_states[handler_num].crc_low = rx_data;
 		handler_states[handler_num].rx_state++;
+		#ifdef DEBUG_BLDC_P
+			Serial.println(F("[ bldc ] packet_process_byte = Received crc_low byte."));
+		#endif
 		handler_states[handler_num].rx_timeout = PACKET_RX_TIMEOUT;
 		break;
 

@@ -127,6 +127,9 @@ void bldc_interface_send_packet(unsigned char *data, int len) {
  * The length of the buffer.
  */
 void bldc_interface_process_packet(unsigned char *data, int len) {
+	#ifdef DEBUG_BLDC
+		Serial.println(F("[ bldc ] New packet to process!"));
+	#endif
 	if (!len) {
 		return;
 	}
@@ -144,6 +147,9 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 
 	switch (id) {
 	case COMM_FW_VERSION:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_FW_VERSION = ?"));
+		#endif
 		if (len == 2) {
 			ind = 0;
 			fw_major = data[ind++];
@@ -155,7 +161,15 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_ERASE_NEW_APP:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_ERASE_NEW_APP = ?"));
+		#endif
+		// TODO
+		break;
 	case COMM_WRITE_NEW_APP_DATA:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_WRITE_NEW_APP_DATA = ?"));
+		#endif
 		// TODO
 		break;
 
@@ -202,6 +216,9 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_PRINT:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_PRINT = ?"));
+		#endif
 		if (rx_printf_func) {
 			data[len] = '\0';
 			rx_printf_func((char*)data);
@@ -209,10 +226,16 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_SAMPLE_PRINT:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_SAMPLE_PRINT = ?"));
+		#endif
 		// TODO
 		break;
 
 	case COMM_ROTOR_POSITION:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_ROTOR_POSITION = ?"));
+		#endif
 		ind = 0;
 		rotor_pos = buffer_get_float32(data, 100000.0, &ind);
 
@@ -222,11 +245,22 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_EXPERIMENT_SAMPLE:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_EXPERIMENT_SAMPLE = ?"));
+		#endif
 		// TODO
 		break;
 
 	case COMM_GET_MCCONF:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_GET_MCCONF = ?"));
+		#endif
+		//TODO
+		break;
 	case COMM_GET_MCCONF_DEFAULT:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_GET_MCCONF_DEFAULT = ?"));
+		#endif
 		ind = 0;
 		mcconf.pwm_mode = (mc_pwm_mode)data[ind++];
 		mcconf.comm_mode = (mc_comm_mode)data[ind++];
@@ -319,7 +353,15 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_GET_APPCONF:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_GET_APPCONF = ?"));
+		#endif
+		// TODO
+		break;
 	case COMM_GET_APPCONF_DEFAULT:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_GET_APPCONF_DEFAULT = ?"));
+		#endif
 		ind = 0;
 		appconf.controller_id = data[ind++];
 		appconf.timeout_msec = buffer_get_uint32(data, &ind);
@@ -387,6 +429,9 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_DETECT_MOTOR_PARAM:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_DETECT_MOTOR_PARAM = ?"));
+		#endif
 		ind = 0;
 		detect_cycle_int_limit = buffer_get_float32(data, 1000.0, &ind);
 		detect_coupling_k = buffer_get_float32(data, 1000.0, &ind);
@@ -402,22 +447,37 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_DETECT_MOTOR_R_L: {
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_DETECT_MOTOR_R_L = ?"));
+		#endif
 		// TODO!
 	} break;
 
 	case COMM_DETECT_MOTOR_FLUX_LINKAGE: {
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_DETECT_MOTOR_FLUX_LINKAGE = ?"));
+		#endif
 		// TODO!
 	} break;
 
 	case COMM_DETECT_ENCODER: {
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_DETECT_ENCODER = ?"));
+		#endif
 		// TODO!
 	} break;
 
 	case COMM_DETECT_HALL_FOC: {
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_DETECT_HALL_FOC = ?"));
+		#endif
 		// TODO!
 	} break;
 
 	case COMM_GET_DECODED_PPM:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_GET_DECODED_PPM = ?"));
+		#endif
 		ind = 0;
 		dec_ppm = buffer_get_float32(data, 1000000.0, &ind);
 		dec_ppm_len = buffer_get_float32(data, 1000000.0, &ind);
@@ -428,6 +488,9 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_GET_DECODED_ADC:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_GET_DECODED_ADC = ?"));
+		#endif
 		ind = 0;
 		dec_adc = buffer_get_float32(data, 1000000.0, &ind);
 		dec_adc_voltage = buffer_get_float32(data, 1000000.0, &ind);
@@ -439,6 +502,9 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_GET_DECODED_CHUK:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_GET_DECODED_CHUK = ?"));
+		#endif
 		ind = 0;
 		dec_chuk = buffer_get_float32(data, 1000000.0, &ind);
 
@@ -448,6 +514,9 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_SET_MCCONF:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_SET_MCCONF = ?"));
+		#endif
 		// This is a confirmation that the new mcconf is received.
 		if (rx_mcconf_received_func) {
 			rx_mcconf_received_func();
@@ -455,6 +524,9 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	case COMM_SET_APPCONF:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] COMM_SET_APPCONF = ?"));
+		#endif
 		// This is a confirmation that the new appconf is received.
 		if (rx_appconf_received_func) {
 			rx_appconf_received_func();
@@ -462,6 +534,9 @@ void bldc_interface_process_packet(unsigned char *data, int len) {
 		break;
 
 	default:
+		#ifdef DEBUG_BLDC
+			Serial.println(F("[ bldc ] default = ?"));
+		#endif
 		break;
 	}
 }
@@ -528,8 +603,7 @@ void bldc_interface_set_rx_appconf_received_func(void(*func)(void)) {
 void bldc_interface_terminal_cmd(char* cmd) {
 	int send_index = 0;
 	int len = strlen(cmd);
-	//fwd_can_append(send_buffer, &send_index);
-	fwd_can_append();
+	fwd_can_append(send_buffer, &send_index);
 	send_buffer[send_index++] = COMM_TERMINAL_CMD;
 	memcpy(send_buffer + send_index, cmd, len);
 	send_index += len;
@@ -538,8 +612,7 @@ void bldc_interface_terminal_cmd(char* cmd) {
 
 void bldc_interface_set_duty_cycle(float dutyCycle) {
 	int send_index = 0;
-	//fwd_can_append(send_buffer, &send_index);
-	fwd_can_append();
+	fwd_can_append(send_buffer, &send_index);
 	send_buffer[send_index++] = COMM_SET_DUTY;
 	buffer_append_float32(send_buffer, dutyCycle, 100000.0, &send_index);
 	send_packet_no_fwd(send_buffer, send_index);
@@ -548,26 +621,24 @@ void bldc_interface_set_duty_cycle(float dutyCycle) {
 void bldc_interface_set_current(float current) {
 	uint8_t send_buffer[5];
 	int send_index = 0;
-	//fwd_can_append(send_buffer, &send_index);
+	fwd_can_append(send_buffer, &send_index);
 	send_buffer[send_index++] = COMM_SET_CURRENT;
 	buffer_append_float32(send_buffer, current, 1000.0, &send_index);
-	//Serial.write(send_buffer, send_index); Serial.println("");
 	send_packet_no_fwd(send_buffer, send_index);
 }
 
-/*void bldc_interface_set_current_brake(float current) {
+void bldc_interface_set_current_brake(float current) {
+	uint8_t send_buffer[5];
 	int send_index = 0;
-	//fwd_can_append(send_buffer, &send_index);
-	fwd_can_append();
+	fwd_can_append(send_buffer, &send_index);
 	send_buffer[send_index++] = COMM_SET_CURRENT_BRAKE;
 	buffer_append_float32(send_buffer, current, 1000.0, &send_index);
 	send_packet_no_fwd(send_buffer, send_index);
 }
 
-void bldc_interface_set_rpm(int rpm) {
+/*void bldc_interface_set_rpm(int rpm) {
 	int send_index = 0;
-	//fwd_can_append(send_buffer, &send_index);
-	fwd_can_append();
+	fwd_can_append(send_buffer, &send_index);
 	send_buffer[send_index++] = COMM_SET_RPM;
 	buffer_append_int32(send_buffer, rpm, &send_index);
 	send_packet_no_fwd(send_buffer, send_index);
@@ -575,8 +646,7 @@ void bldc_interface_set_rpm(int rpm) {
 
 void bldc_interface_set_pos(float pos) {
 	int send_index = 0;
-	//fwd_can_append(send_buffer, &send_index);
-	fwd_can_append();
+	fwd_can_append(send_buffer, &send_index);
 	send_buffer[send_index++] = COMM_SET_POS;
 	buffer_append_float32(send_buffer, pos, 1000000.0, &send_index);
 	send_packet_no_fwd(send_buffer, send_index);
@@ -584,8 +654,7 @@ void bldc_interface_set_pos(float pos) {
 
 void bldc_interface_set_servo_pos(float pos) {
 	int send_index = 0;
-	//fwd_can_append(send_buffer, &send_index);
-	fwd_can_append();
+	fwd_can_append(send_buffer, &send_index);
 	send_buffer[send_index++] = COMM_SET_SERVO_POS;
 	buffer_append_float16(send_buffer, pos, 1000.0, &send_index);
 	send_packet_no_fwd(send_buffer, send_index);
@@ -593,8 +662,7 @@ void bldc_interface_set_servo_pos(float pos) {
 
 void bldc_interface_set_mcconf(const mc_configuration *mcconf) {
 	int send_index = 0;
-	//fwd_can_append(send_buffer, &send_index);
-	fwd_can_append();
+	fwd_can_append(send_buffer, &send_index);
 	send_buffer[send_index++] = COMM_SET_MCCONF;
 
 	send_buffer[send_index++] = mcconf->pwm_mode;
@@ -764,7 +832,7 @@ void bldc_interface_get_fw_version(void) {
 }
 */
 void bldc_interface_get_values(void) {
-	uint8_t send_buffer[3];
+	unsigned char send_buffer[3];
 	int send_index = 0;
 	fwd_can_append(send_buffer, &send_index);
 	send_buffer[send_index++] = COMM_GET_VALUES;
