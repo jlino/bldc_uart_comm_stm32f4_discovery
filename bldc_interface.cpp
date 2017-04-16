@@ -659,7 +659,22 @@ void bldc_interface_set_servo_pos(float pos) {
 	buffer_append_float16(send_buffer, pos, 1000.0, &send_index);
 	send_packet_no_fwd(send_buffer, send_index);
 }
-
+*/
+void bldc_interface_set_uartchuck_data(const chuck_data *chuck_d_remote) {
+	uint8_t send_buffer[13];
+	int send_index = 0;
+	fwd_can_append(send_buffer, &send_index);
+	send_buffer[send_index++] = COMM_CUSTOM_APP_DATA;
+	send_buffer[send_index++] = (uint8_t) chuck_d_remote->js_x;
+	send_buffer[send_index++] = (uint8_t) chuck_d_remote->js_y;
+	send_buffer[send_index++] = (uint8_t) chuck_d_remote->bt_c;
+	send_buffer[send_index++] = (uint8_t) chuck_d_remote->bt_z;
+	buffer_append_int16(send_buffer, chuck_d_remote->acc_x, &send_index);
+	buffer_append_int16(send_buffer, chuck_d_remote->acc_y, &send_index);
+	buffer_append_int16(send_buffer, chuck_d_remote->acc_z, &send_index);
+	send_packet_no_fwd(send_buffer, send_index);
+}
+/*
 void bldc_interface_set_mcconf(const mc_configuration *mcconf) {
 	int send_index = 0;
 	fwd_can_append(send_buffer, &send_index);

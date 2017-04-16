@@ -27,7 +27,7 @@
 
 
 // Settings
-#define __CUA_UART_BAUDRATE			9600 //115200
+#define __CUA_UART_BAUDRATE			115200 // 9600
 
 // Private functions
 static void send_packet(unsigned char *data, int len);

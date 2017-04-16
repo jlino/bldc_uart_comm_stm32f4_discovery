@@ -268,6 +268,16 @@ typedef struct {
 	float tc_max_diff;
 } chuk_config;
 
+typedef struct {
+	int js_x;
+	int js_y;
+	int acc_x;
+	int acc_y;
+	int acc_z;
+	bool bt_c;
+	bool bt_z;
+} chuck_data;
+
 // NRF Datatypes
 typedef enum {
 	NRF_SPEED_250K = 0,
