@@ -26,8 +26,8 @@
 #include <bldc_interface_uart.h>
 
 
-// Settings
-#define __CUA_UART_BAUDRATE			115200 // 9600
+// Settings							
+#define __CUA_UART_BAUDRATE			57600 // 57600 was tested to be the max value without errors //115200 // 9600
 
 // Private functions
 static void send_packet(unsigned char *data, int len);
@@ -58,30 +58,18 @@ void softwareSerialEvent() {
 	bool isWork = false;
 	#ifdef DEBUG_BLDC
 		int len = 0;
-		//uint8_t rbyte;
 	#endif
 
 	if(mySerial.available()) {
-		//isWork = true;
-
 		#ifdef DEBUG_BLDC
 			Serial.println(F("[ bldc ] softwareSerialEvent: Reading from serial..."));
 		#endif
 
 		while (mySerial.available()) {
-		
-			//#ifndef DEBUG_BLDC
-				bldc_interface_uart_process_byte(mySerial.read());
-				#ifdef DEBUG_BLDC
-					len += sizeof(uint8_t);
-				#endif
-			/*#else
-				rbyte = mySerial.read();
-				bldc_interface_uart_process_byte(rbyte);
-				Serial.write(rbyte);
+			bldc_interface_uart_process_byte(mySerial.read());
+			#ifdef DEBUG_BLDC
 				len += sizeof(uint8_t);
-			#endif*/
-					//delay(2);
+			#endif
 		}
 
 		
@@ -112,10 +100,7 @@ void softwareSerialEvent() {
  * Data array length
  */
 void send_packet(unsigned char *data, int len) {
-	/*if (len > (PACKET_MAX_PL_LEN + 5)) {
-		return;
-	}*/
-	//data[0] = 4;
+
 	// Send the data over UART
 	#ifdef DEBUG_BLDC
 		Serial.print(F("[ bldc ] send_packet = len["));
@@ -123,21 +108,19 @@ void send_packet(unsigned char *data, int len) {
 		Serial.print(F("] write["));
 		for (int i = 0; i < len ; i++){
 			Serial.print(data[i]);
-		Serial.print(F(":"));
+			Serial.print(F(":"));
 		}
-		//Serial.write(data, len);
+		
 		Serial.println(F("]"));
 	#endif
 	
 	mySerial.write(data, len);
+	delay(1);
 }
 
  void comm_uart_arduino_init() {
 	// Initialize UART
 	mySerial.begin(__CUA_UART_BAUDRATE);
-	/*while (!Serial) {
-	    ; // wait for serial port to connect. Needed for native USB port only
-	}*/
 
 	// Initialize the bldc interface and provide a send function
 	bldc_interface_uart_init(&send_packet);
@@ -172,11 +155,11 @@ void send_packet(unsigned char *data, int len) {
 	TIMSK1 |= (1 << OCIE1A);*/
 
 	//set timer2 interrupt at 1kHz
-	TCCR2A = 0;// set entire TCCR2A register to 0
-	TCCR2B = 0;// same for TCCR2B
-	TCNT2  = 0;//initialize counter value to 0
+	TCCR2A = 0;		// set entire TCCR2A register to 0
+	TCCR2B = 0;		// same for TCCR2B
+	TCNT2  = 0;		//initialize counter value to 0
 	// set compare match register for 1khz increments
-	OCR2A = 249;// = (16*10^6) / (8000*8) - 1 (must be <256)
+	OCR2A = 249;	// = (16*10^6) / (8000*8) - 1 (must be <256)
 	// turn on CTC mode
 	TCCR2A |= (1 << WGM21);
 	// Set CS21 bit for 64 prescaler
