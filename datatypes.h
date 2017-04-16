@@ -81,7 +81,7 @@ typedef struct {
     float watt_hours;
     float watt_hours_charged;
     int32_t tachometer;
-    int tachometer_abs;
+    int32_t tachometer_abs;
     mc_fault_code fault_code;
 } mc_values;
 
